@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LearnPath AI - 自适应编程学习平台</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f4f8; color: #2d3748; }
+.header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem 2rem; text-align: center; }
+.header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+.header p { opacity: 0.85; font-size: 0.95rem; }
+.container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.card { background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+.card h2 { font-size: 1.2rem; color: #4a5568; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e2e8f0; }
+.panel-left { display: flex; flex-direction: column; gap: 1.2rem; }
+.panel-right { display: flex; flex-direction: column; gap: 1.2rem; }
+.student-info { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+.student-info select, .student-info button { padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid #cbd5e0; font-size: 0.9rem; }
+.student-info button { background: #667eea; color: white; border: none; cursor: pointer; }
+.student-info button:hover { background: #5a67d8; }
+.profile { background: #f7fafc; border-radius: 8px; padding: 1rem; margin-top: 0.5rem; font-size: 0.9rem; line-height: 1.6; }
+.profile strong { color: #667eea; }
+.kgraph { height: 320px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+.exercise-box { margin-top: 0.5rem; }
+.exercise-box .q { font-size: 1rem; font-weight: 600; margin-bottom: 0.8rem; }
+.exercise-box .opts { display: flex; flex-direction: column; gap: 0.5rem; }
+.exercise-box .opt { padding: 0.6rem 1rem; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+.exercise-box .opt:hover { background: #edf2f7; }
+.exercise-box .opt.correct { background: #c6f6d5; border-color: #48bb78; }
+.exercise-box .opt.wrong { background: #fed7d7; border-color: #fc8181; }
+.result { margin-top: 0.5rem; padding: 0.5rem; border-radius: 8px; font-size: 0.9rem; }
+.result.success { background: #f0fff4; color: #276749; }
+.result.error { background: #fff5f5; color: #c53030; }
+.code-editor { width: 100%; min-height: 180px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; font-family: "Fira Code", "Consolas", monospace; font-size: 0.9rem; resize: vertical; background: #1a202c; color: #e2e8f0; }
+.feedback-item { padding: 0.5rem 0.8rem; margin: 0.3rem 0; border-radius: 6px; font-size: 0.85rem; }
+.feedback-item.warning { background: #fefcbf; color: #975a16; border-left: 3px solid #ecc94b; }
+.feedback-item.info { background: #ebf8ff; color: #2b6cb0; border-left: 3px solid #63b3ed; }
+.feedback-item.tip { background: #f0fff4; color: #276749; border-left: 3px solid #68d391; }
+.path-item { padding: 0.4rem 0.8rem; margin: 0.2rem 0; background: #edf2f7; border-radius: 6px; font-size: 0.85rem; }
+.score-circle { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; color: white; margin: 0 auto; }
+.score-high { background: #48bb78; }
+.score-mid { background: #ed8936; }
+.score-low { background: #fc8181; }
+.path-panel { max-height: 400px; overflow-y: auto; }
+.btn { padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; border: none; transition: all 0.2s; }
+.btn-primary { background: #667eea; color: white; }
+.btn-primary:hover { background: #5a67d8; }
+.btn-green { background: #48bb78; color: white; }
+.btn-green:hover { background: #38a169; }
+.btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.8rem; }
+@media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="header">
+    <h1>🧠 LearnPath AI</h1>
+    <p>基于知识图谱与大语言模型的自适应编程学习平台 (原型)</p>
+</div>
+
+<div class="container">
+    <div class="panel-left">
+        <!-- 学生档案 -->
+        <div class="card">
+            <h2>👤 学习者档案</h2>
+            <div class="student-info">
+                <button onclick="loadStudentProfile()">🎲 加载模拟学生</button>
+            </div>
+            <div class="profile" id="profile" style="display:none"></div>
+        </div>
+
+        <!-- 知识图谱 -->
+        <div class="card">
+            <h2>🗺️ Python 知识图谱</h2>
+            <div class="kgraph" id="kgraph"></div>
+            <div style="font-size:0.8rem;color:#718096;margin-top:0.5rem;">
+                图例: 箭头表示 "需先掌握 → 才能学习" 的依赖关系
+            </div>
+        </div>
+
+        <!-- 自适应练习 -->
+        <div class="card">
+            <h2>📝 自适应练习</h2>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="getExercise(1)">★ 初级</button>
+                <button class="btn btn-primary" onclick="getExercise(2)">★★ 中级</button>
+                <button class="btn btn-primary" onclick="getExercise(3)">★★★ 进阶</button>
+                <button class="btn btn-primary" onclick="getExercise(4)">★★★★ 高级</button>
+            </div>
+            <div class="exercise-box" id="exercise"></div>
+            <div class="result" id="exercise-result" style="display:none"></div>
+        </div>
+    </div>
+
+    <div class="panel-right">
+        <!-- 学习路径推荐 -->
+        <div class="card path-panel">
+            <h2>🎯 个性化学习路径</h2>
+            <div class="btn-group" style="margin-bottom:1rem;">
+                <button class="btn btn-green" onclick="getLearningPath()">🔍 生成推荐路径</button>
+            </div>
+            <div id="path-result">
+                <p style="color:#a0aec0;">点击按钮，系统将根据当前掌握情况生成推荐学习路径</p>
+            </div>
+        </div>
+
+        <!-- AI 代码审查 -->
+        <div class="card">
+            <h2>🤖 AI 代码审查</h2>
+            <textarea class="code-editor" id="code-input" placeholder="# 在这里编写你的 Python 代码...
+def hello(name):
+    return f'Hello, {name}!'
+
+print(hello('World'))"></textarea>
+            <div class="btn-group">
+                <button class="btn btn-green" onclick="reviewCode()">🔍 审查代码</button>
+                <button class="btn" onclick="document.getElementById('code-input').value=''" style="background:#e2e8f0;">清空</button>
+            </div>
+            <div id="review-result" style="margin-top:1rem;"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+// ===== 知识图谱可视化 =====
+async function drawKnowledgeGraph() {
+    const resp = await fetch('/api/knowledge-graph');
+    const data = await resp.json();
+    const container = d3.select('#kgraph');
+    const width = container.node().clientWidth, height = 320;
+
+    const svg = container.html('').append('svg')
+        .attr('width', width).attr('height', height);
+
+    const color = d3.scaleOrdinal()
+        .domain([...new Set(data.nodes.map(n => n.category))])
+        .range(['#667eea', '#48bb78', '#ed8936', '#e53e3e', '#805ad5', '#dd6b20']);
+
+    const simulation = d3.forceSimulation(data.nodes)
+        .force('link', d3.forceLink(data.edges).id(d => d.id).distance(80))
+        .force('charge', d3.forceManyBody().strength(-300))
+        .force('center', d3.forceCenter(width / 2, height / 2))
+        .force('collision', d3.forceCollide(30));
+
+    // 箭头定义
+    svg.append('defs').selectAll('marker')
+        .data(['arrow']).enter().append('marker')
+        .attr('id', 'arrow').attr('viewBox', '0 -5 10 10')
+        .attr('refX', 22).attr('refY', 0)
+        .attr('markerWidth', 8).attr('markerHeight', 8)
+        .attr('orient', 'auto')
+        .append('path').attr('d', 'M0,-5L10,0L0,5').attr('fill', '#999');
+
+    const link = svg.append('g')
+        .selectAll('line').data(data.edges).enter().append('line')
+        .attr('stroke', '#cbd5e0').attr('stroke-width', 1.5).attr('marker-end', 'url(#arrow)');
+
+    const node = svg.append('g')
+        .selectAll('g').data(data.nodes).enter().append('g');
+
+    node.append('circle')
+        .attr('r', d => 12 + d.difficulty * 2)
+        .attr('fill', d => color(d.category))
+        .attr('stroke', 'white').attr('stroke-width', 1.5)
+        .call(d3.drag().on('start', (e, d) => { if (!e.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+              .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
+              .on('end', (e, d) => { if (!e.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; }));
+
+    node.append('text')
+        .text(d => d.id.length > 4 ? d.id.slice(0,6)+'..' : d.id)
+        .attr('text-anchor', 'middle').attr('dy', d => -18 - d.difficulty * 2)
+        .attr('font-size', '9px').attr('fill', '#4a5568');
+
+    simulation.on('tick', () => {
+        link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+            .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+        node.attr('transform', d => `translate(${d.x},${d.y})`);
+    });
+}
+drawKnowledgeGraph();
+
+// ===== 学生档案 =====
+async function loadStudentProfile() {
+    const resp = await fetch('/api/simulate-student');
+    const s = await resp.json();
+    document.getElementById('profile').style.display = 'block';
+    document.getElementById('profile').innerHTML = `
+        <strong>${s.name}</strong><br>
+        📚 已掌握: ${s.mastered.join(', ') || '无'}<br>
+        💪 优势: ${s.strengths}<br>
+        ⚠️ 薄弱: ${s.weakness}<br>
+        🎯 推荐下一步: <strong>${s.recommended_next}</strong><br>
+        📖 学习风格: ${s.learning_style}
+    `;
+}
+
+// ===== 练习题 =====
+async function getExercise(level) {
+    const resp = await fetch(`/api/exercise/${level}`);
+    const ex = await resp.json();
+    const div = document.getElementById('exercise');
+    div.innerHTML = `
+        <div class="q">[${ex.concept}] ${ex.q}</div>
+        <div class="opts">
+            ${ex.opts.map((o, i) => `<div class="opt" onclick="checkAnswer(${i}, ${ex.ans}, this)">${String.fromCharCode(65+i)}. ${o}</div>`).join('')}
+        </div>
+    `;
+    document.getElementById('exercise-result').style.display = 'none';
+}
+
+function checkAnswer(chosen, correct, el) {
+    const opts = el.parentElement.children;
+    for (let o of opts) o.style.pointerEvents = 'none';
+    opts[correct].classList.add('correct');
+    const result = document.getElementById('exercise-result');
+    result.style.display = 'block';
+    if (chosen === correct) {
+        result.className = 'result success';
+        result.textContent = '✓ 正确！做得很好！';
+    } else {
+        opts[chosen].classList.add('wrong');
+        result.className = 'result error';
+        result.textContent = '✗ 错误，请查看正确答案（绿色标注）';
+    }
+}
+
+// ===== AI 代码审查 =====
+async function reviewCode() {
+    const code = document.getElementById('code-input').value;
+    const resp = await fetch('/api/review-code', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({code})
+    });
+    const data = await resp.json();
+    const div = document.getElementById('review-result');
+    let scoreClass = data.score >= 80 ? 'score-high' : data.score >= 50 ? 'score-mid' : 'score-low';
+    div.innerHTML = `
+        <div style="text-align:center;margin-bottom:1rem;">
+            <div class="score-circle ${scoreClass}">${data.score}</div>
+            <div style="margin-top:0.3rem;font-size:0.85rem;color:#718096;">代码质量评分</div>
+        </div>
+        ${data.feedbacks.map(f => `<div class="feedback-item ${f.level}">${f.level === 'warning' ? '⚠️' : f.level === 'tip' ? '💡' : 'ℹ️'} ${f.msg}</div>`).join('')}
+    `;
+}
+
+// ===== 学习路径推荐 =====
+async function getLearningPath() {
+    const profile = document.getElementById('profile').textContent || document.getElementById('profile').innerText;
+    let mastered = [];
+    const match = profile.match(/已掌握:\s*(.*?)(?:\n|$)/);
+    if (match && match[1] && match[1] !== '无') {
+        mastered = match[1].split(', ').filter(Boolean);
+    }
+
+    const resp = await fetch('/api/learning-path', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({mastered})
+    });
+    const data = await resp.json();
+    const div = document.getElementById('path-result');
+    div.innerHTML = `
+        <p style="font-size:0.9rem;margin-bottom:0.5rem;">已掌握 <strong>${data.mastered_count}</strong>/${data.total_count} 个概念</p>
+        <strong>推荐学习顺序:</strong>
+        ${data.recommendations.length > 0
+            ? data.recommendations.map(p => `<div class="path-item">📌 ${p}</div>`).join('')
+            : '<p style="color:#a0aec0;">暂无可用推荐</p>'}
+    `;
+}
+</script>
+</body>
+</html>
