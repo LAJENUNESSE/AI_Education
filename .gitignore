@@ -3,10 +3,10 @@ __pycache__/
 *.pyc
 .ipynb_checkpoints/
 *.db
-models/*.h5
-models/*.pkl
-data/fer2013/
-data/faces/
-data/recordings/
+*.h5
+*.pkl
+fer2013/
+faces/
+recordings/
 libdevice.10.bc
 .env
