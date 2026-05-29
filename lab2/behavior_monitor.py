@@ -5,8 +5,25 @@ import time
 import numpy as np
 import cv2
 import warnings
+from PIL import Image, ImageDraw, ImageFont
 
 warnings.filterwarnings('ignore')
+
+# 中文字体路径 (WSL2 Ubuntu)
+_FONT_PATH = '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc'
+_FONT_INDEX = 0  # ttc 集合中 SC (简体中文) 的索引
+
+
+def _put_chinese_text(img, text, pos, font_size=20, color=(255, 255, 255)):
+    """在 OpenCV 图片上绘制中文文本 (通过 PIL)."""
+    pil_img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+    draw = ImageDraw.Draw(pil_img)
+    try:
+        font = ImageFont.truetype(_FONT_PATH, font_size, index=_FONT_INDEX)
+    except Exception:
+        font = ImageFont.truetype(_FONT_PATH, font_size)
+    draw.text(pos, text, font=font, fill=color)
+    return cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
 
 
 def compute_body_angle(landmarks):
@@ -289,22 +306,22 @@ def run_simulated_monitoring():
         if scenario_key == 'falling':
             cv2.ellipse(frame, (320, 400), (120, 40), 0, 0, 360, (150, 150, 200), -1)
             cv2.circle(frame, (300, 360), 25, (255, 200, 180), -1)
-            cv2.putText(frame, "⚠ FALL DETECTED", (200, 280),
+            cv2.putText(frame, "FALL DETECTED!", (200, 280),
                         cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2)
+            frame = _put_chinese_text(frame, "摔倒检测", (200, 310), 20, (200, 0, 0))
         elif scenario_key == 'intrusion':
             cv2.circle(frame, (200, 200), 30, (255, 150, 150), -1)
-            cv2.putText(frame, "⚠ INTRUSION: 厨房危险区", (50, 160),
+            cv2.putText(frame, "INTRUSION DETECTED", (50, 140),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+            frame = _put_chinese_text(frame, "区域入侵: 厨房危险区", (50, 165), 18, (200, 0, 0))
             cv2.rectangle(frame, (100, 100), (300, 300), (0, 0, 255), 2)
         elif scenario_key == 'normal_walking':
             cv2.circle(frame, (320, 250), 30, (180, 255, 180), -1)
-            cv2.putText(frame, "正常活动", (260, 200),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 128, 0), 2)
+            frame = _put_chinese_text(frame, "正常活动", (260, 200), 20, (0, 128, 0))
         else:
             cv2.circle(frame, (320, 280), 30, (180, 255, 180), -1)
 
-        cv2.putText(frame, f"场景: {desc}", (10, 30),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
+        frame = _put_chinese_text(frame, f"场景: {desc}", (10, 10), 22, (0, 0, 0))
         cv2.imwrite(os.path.join(results_dir, f'behavior_{scenario_key}.png'), frame)
 
     print(f"模拟监测结果保存到 {results_dir}/")
