@@ -308,8 +308,24 @@ def create_demo_emotion_model():
     return model
 
 
+def load_vit_model():
+    """加载 ViT 预训练情感分析模型（优先本地，否则离线缓存）. """
+    from transformers import pipeline
+    local_path = os.path.join(MODEL_DIR, 'vit_emotion')
+    if os.path.isdir(local_path) and os.path.exists(os.path.join(local_path, 'model.safetensors')):
+        print("从本地加载 ViT 模型 ...")
+        return pipeline('image-classification', model=local_path, framework='pt')
+    print("从 HuggingFace 缓存加载 ViT 模型 ...")
+    os.environ.setdefault('HF_HUB_OFFLINE', '1')
+    return pipeline('image-classification',
+                    model='dima806/facial_emotions_image_detection',
+                    framework='pt')
+
+
 def load_emotion_model(model_type='cnn'):
     """加载已训练的情感模型."""
+    if model_type == 'vit':
+        return load_vit_model()
     if model_type == 'knn':
         path = os.path.join(MODEL_DIR, 'emotion_knn.pkl')
         if os.path.exists(path):
@@ -365,6 +381,18 @@ def train_all_emotion_models():
 
 def predict_emotion(model, face_img, model_type='cnn'):
     """对单张人脸图像预测情感."""
+    if model_type == 'vit':
+        from PIL import Image
+        try:
+            rgb = cv2.cvtColor(face_img, cv2.COLOR_BGR2RGB)
+            pil_img = Image.fromarray(rgb)
+            result = model(pil_img)
+            label = result[0]['label'].capitalize()
+            pred = EMOTIONS.index(label) if label in EMOTIONS else 0
+            return label, pred
+        except Exception:
+            return 'Neutral', 6
+
     gray = cv2.cvtColor(face_img, cv2.COLOR_BGR2GRAY)
     resized = cv2.resize(gray, (48, 48))
 

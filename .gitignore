@@ -10,3 +10,4 @@ faces/
 recordings/
 libdevice.10.bc
 .env
+*.zip

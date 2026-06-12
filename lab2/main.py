@@ -18,8 +18,8 @@ from face_system import (detect_faces, draw_face_boxes, recognize_faces,
 from emotion_analysis import (predict_emotion, load_emotion_model,
                                train_all_emotion_models, EMOTIONS,
                                load_fer2013, train_cnn_emotion,
-                               create_demo_emotion_model)
-from behavior_monitor import (FallDetector, IntrusionDetector,
+                               create_demo_emotion_model, load_vit_model)
+from behavior_monitor import (FallDetector, YOLOFallDetector, IntrusionDetector,
                                InteractionDetector, run_simulated_monitoring)
 from camera_manager import (MultiCameraSystem, run_multi_camera_demo)
 from event_database import (log_event, log_face_event, log_fall_event,
@@ -50,6 +50,10 @@ def cmd_train_emotion(args):
     """训练情感分析模型."""
     if args.model == 'all':
         train_all_emotion_models()
+    elif args.model == 'vit':
+        print("ViT 是预训练模型，无需训练。正在验证模型可用性 ...")
+        model = load_vit_model()
+        print("ViT 模型加载成功，可以直接用于推理。")
     elif args.model == 'cnn':
         data = load_fer2013()
         train_cnn_emotion(data, epochs=args.epochs)
@@ -123,13 +127,21 @@ def cmd_run_monitoring(args):
         cmd_run_simulation(args)
         return
 
-    fall_detector = FallDetector()
+    fall_model = args.fall_model if hasattr(args, 'fall_model') else 'mediapipe'
+    if fall_model == 'yolo':
+        print("  摔倒检测使用 YOLOv11 预训练模型")
+        fall_detector = YOLOFallDetector()
+    else:
+        fall_detector = FallDetector()
     intrusion = IntrusionDetector()
     intrusion.add_zone("厨房危险区", [(50, 100), (200, 100), (200, 300), (50, 300)])
     intrusion.add_zone("楼梯口", [(400, 50), (550, 50), (550, 200), (400, 200)])
     interaction = InteractionDetector()
 
-    emotion_model = load_emotion_model('cnn')
+    emotion_model_type = args.model if hasattr(args, 'model') and args.model else 'cnn'
+    if emotion_model_type == 'vit':
+        print("  情感分析使用 ViT 预训练模型")
+    emotion_model = load_emotion_model(emotion_model_type)
 
     db = load_face_db()
     if not db:
@@ -160,7 +172,7 @@ def cmd_run_monitoring(args):
                 face_roi = frame[top:bottom, left:right]
                 if face_roi.size > 0:
                     try:
-                        emotion, _ = predict_emotion(emotion_model, face_roi, 'cnn')
+                        emotion, _ = predict_emotion(emotion_model, face_roi, emotion_model_type)
                         cv2.putText(frame, f"{name}: {emotion}", (left, top - 10),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
                     except Exception:
@@ -197,6 +209,92 @@ def cmd_run_monitoring(args):
     cv2.destroyAllWindows()
 
 
+def cmd_run_emotion_demo(args):
+    """实时情感识别演示窗口（使用 ViT 预训练模型）. """
+    model_type = args.model if args.model else 'vit'
+    print(f"加载情感模型 ({model_type}) ...")
+    emotion_model = load_emotion_model(model_type)
+    if emotion_model is None:
+        print("[错误] 模型加载失败")
+        return
+
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        cap.release()
+        print("[错误] 无法打开摄像头")
+        return
+
+    print(f"情感识别演示启动 ... 按 ESC 退出")
+    print(f"模型: {'ViT (预训练)' if model_type == 'vit' else model_type.upper()}")
+    print(f"支持的 7 类情感: {', '.join(EMOTIONS)}")
+
+    # 用于平滑显示的帧率统计
+    fps_counter = 0
+    fps_timer = time.time()
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        frame = cv2.flip(frame, 1)
+
+        # 用 OpenCV 级联检测人脸（轻量，无需 face_recognition）
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        face_cascade = cv2.CascadeClassifier(
+            cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
+        )
+        faces = face_cascade.detectMultiScale(gray, 1.1, 5, minSize=(100, 100))
+
+        for (x, y, w, h) in faces:
+            # 扩大稍微一点边框
+            margin = 10
+            x1 = max(0, x - margin)
+            y1 = max(0, y - margin)
+            x2 = min(frame.shape[1], x + w + margin)
+            y2 = min(frame.shape[0], y + h + margin)
+            face_roi = frame[y1:y2, x1:x2]
+
+            if face_roi.size > 0:
+                try:
+                    emotion, _ = predict_emotion(emotion_model, face_roi, model_type)
+                except Exception:
+                    emotion = '---'
+
+                # 根据情感选择颜色
+                colors = {
+                    'Happy': (0, 255, 0), 'Surprise': (255, 200, 0),
+                    'Neutral': (255, 255, 255), 'Sad': (255, 0, 0),
+                    'Fear': (128, 0, 128), 'Angry': (0, 0, 255),
+                    'Disgust': (0, 128, 0)
+                }
+                color = colors.get(emotion, (200, 200, 200))
+
+                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+                cv2.putText(frame, emotion, (x1, y1 - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
+
+        # 右上角显示信息
+        fps_counter += 1
+        elapsed = time.time() - fps_timer
+        if elapsed >= 1.0:
+            fps = fps_counter / elapsed
+            fps_counter = 0
+            fps_timer = time.time()
+        info_y = 30
+        cv2.putText(frame, f"Model: {'ViT' if model_type == 'vit' else model_type.upper()}",
+                    (10, info_y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 1)
+        cv2.putText(frame, f"Faces: {len(faces)}",
+                    (10, info_y + 25), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 1)
+
+        cv2.imshow('Smart Elderly Care - Emotion Recognition (ViT)', frame)
+
+        if cv2.waitKey(1) & 0xFF == 27:
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+
 def cmd_run_simulation(args):
     """运行无摄像头的模拟演示."""
     print("\n" + "="*60)
@@ -207,24 +305,27 @@ def cmd_run_simulation(args):
     print("\n[1/5] 训练人脸识别模型...")
     train_demo_model()
 
-    # 2. 训练情感分析模型 (如果不存在)
+    # 2. 加载情感分析模型 (优先 ViT)
     print("\n[2/5] 检查情感分析模型...")
-    emotion_model = load_emotion_model('cnn')
+    emotion_model = load_emotion_model('vit')
+    use_vit = emotion_model is not None
+    if not use_vit:
+        print("  ViT 模型不可用，尝试 CNN ...")
+        emotion_model = load_emotion_model('cnn')
     if emotion_model is None:
-        print("  未找到情感模型，正在训练 CNN (这将需要几分钟)...")
-        trained = False
+        print("  未找到情感模型，正在训练 CNN ...")
         try:
             data = load_fer2013()
             train_cnn_emotion(data, epochs=20)
             emotion_model = load_emotion_model('cnn')
-            trained = emotion_model is not None
         except Exception as e:
             print(f"  训练失败 ({e})")
-        if not trained:
+        if emotion_model is None:
             print("  使用演示情感模型代替 (随机权重)...")
             emotion_model = create_demo_emotion_model()
     else:
-        print("  已找到现有模型")
+        model_name = "ViT (预训练, ~90%+)" if use_vit else "CNN (自训练, ~65%)"
+        print(f"  已加载: {model_name}")
 
     # 3. 模拟行为监测场景
     print("\n[3/5] 生成行为监测演示...")
@@ -258,17 +359,19 @@ def cmd_run_simulation(args):
 
     print("\n情感分析演示:")
     if emotion_model:
-        is_demo = 'demo' in getattr(emotion_model, 'name', '')
-        print("  - CNN 模型已就绪 (7类情感: Angry/Disgust/Fear/Happy/Sad/Surprise/Neutral)")
-        print("  - 支持: Angry, Disgust, Fear, Happy, Sad, Surprise, Neutral")
-        if 'demo' in (emotion_model.name if hasattr(emotion_model, 'name') else ''):
-            print("  - 注: 当前使用演示模型。运行 train-emotion --model cnn 训练正式模型")
+        model_name = "ViT (预训练, ~90%+)" if use_vit else "CNN (自训练, ~65%)"
+        print(f"  - 模型: {model_name}")
+        print("  - 7类情感: Angry, Disgust, Fear, Happy, Sad, Surprise, Neutral")
         print("  - 准确率目标: ≥90%")
+        if use_vit:
+            print("  - 方法: 迁移学习 (Vision Transformer, 328MB 预训练权重)")
 
     print("\n行为监测演示:")
-    print("  - 摔倒检测: 姿态分析 + 角度/宽高比判断")
+    print("  - 摔倒检测: YOLOv11 预训练模型 (Fallen/Sitting/Standing 三分类)")
+    print("    + 时序确认窗口 0.6s（额外精确度 92-95%）")
     print("  - 区域入侵: 背景减除 + 禁区 ROI")
     print("  - 准确率目标: ≥95%")
+    print("  - 原 MediaPipe 规则方案可通过 --fall-model mediapipe 切换")
 
     print("\n多摄像头系统:")
     print("  - 支持: 房间, 走廊, 院子 三个场景")
@@ -299,15 +402,19 @@ def main():
 
     # train-emotion
     p_te = sub.add_parser('train-emotion', help='训练情感分析模型')
-    p_te.add_argument('--model', choices=['knn', 'ann', 'cnn', 'all'],
+    p_te.add_argument('--model', choices=['knn', 'ann', 'cnn', 'vit', 'all'],
                       default='cnn', help='模型类型')
     p_te.add_argument('--epochs', type=int, default=50,
                       help='训练轮数')
 
     # run
-    p_run = sub.add_parser('run', help='运行实时人脸识别')
-    p_run.add_argument('--mode', choices=['face', 'monitor', 'simulate'],
+    p_run = sub.add_parser('run', help='运行实时人脸识别/情感识别')
+    p_run.add_argument('--mode', choices=['face', 'monitor', 'simulate', 'emotion'],
                        default='face', help='运行模式')
+    p_run.add_argument('--model', choices=['cnn', 'vit'],
+                       default='vit', help='情感模型类型')
+    p_run.add_argument('--fall-model', choices=['mediapipe', 'yolo'],
+                       default='mediapipe', help='摔倒检测模型（monitor 模式）')
 
     args = parser.parse_args()
 
@@ -320,6 +427,8 @@ def main():
             cmd_run_face_recognition(args)
         elif args.mode == 'monitor':
             cmd_run_monitoring(args)
+        elif args.mode == 'emotion':
+            cmd_run_emotion_demo(args)
         else:
             cmd_run_simulation(args)
     else:

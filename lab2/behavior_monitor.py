@@ -145,6 +145,69 @@ class FallDetector:
             self.pose.close()
 
 
+class YOLOFallDetector:
+    """摔倒检测器 - 基于 YOLOv11 预训练模型（Fallen/Sitting/Standing 三分类）. """
+
+    MODEL_PATH = os.path.join(os.path.dirname(__file__), 'models', 'yolo_fall_detection.pt')
+    CLASS_COLORS = {0: (0, 0, 255), 1: (0, 255, 255), 2: (0, 255, 0)}  # fallen红, sitting黄, standing绿
+
+    def __init__(self, conf_threshold=0.4):
+        from ultralytics import YOLO
+        self.model = YOLO(self.MODEL_PATH)
+        self.conf = conf_threshold
+        self.fall_history = []
+        self.fall_duration_threshold = 0.6
+
+    def detect(self, frame):
+        is_fall = False
+        annotated = frame.copy()
+        results = self.model(frame, conf=self.conf, verbose=False)
+
+        detections = []
+        for r in results:
+            boxes = r.boxes
+            if boxes is None:
+                continue
+            for box in boxes:
+                cls_id = int(box.cls[0])
+                conf = float(box.conf[0])
+                x1, y1, x2, y2 = map(int, box.xyxy[0])
+                detections.append({
+                    'class_id': cls_id,
+                    'class_name': r.names[cls_id],
+                    'confidence': conf,
+                    'bbox': (x1, y1, x2, y2)
+                })
+
+                color = self.CLASS_COLORS.get(cls_id, (255, 255, 255))
+                cv2.rectangle(annotated, (x1, y1), (x2, y2), color, 2)
+                label = f"{r.names[cls_id]} ({conf:.0%})"
+                cv2.rectangle(annotated, (x1, y1 - 25), (x2, y1), color, cv2.FILLED)
+                cv2.putText(annotated, label, (x1 + 4, y1 - 6),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
+
+        # 有人处于 fallen 状态持续超过阈值 → 触发摔倒警报
+        now = time.time()
+        fallen_now = any(d['class_id'] == 0 for d in detections)
+        if fallen_now:
+            self.fall_history.append(now)
+            self.fall_history = [t for t in self.fall_history if now - t < 2.0]
+            if len(self.fall_history) > 1:
+                duration = self.fall_history[-1] - self.fall_history[0]
+                is_fall = duration >= self.fall_duration_threshold
+        else:
+            self.fall_history = []
+
+        if is_fall:
+            cv2.putText(annotated, "FALL DETECTED!", (10, 60),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 3)
+
+        return is_fall, detections, annotated
+
+    def close(self):
+        pass
+
+
 class IntrusionDetector:
     """区域入侵检测器 - 基于背景减除 + ROI."""
 
