@@ -4,271 +4,1621 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LearnPath AI - 自适应编程学习平台</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f4f8; color: #2d3748; }
-.header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem 2rem; text-align: center; }
-.header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
-.header p { opacity: 0.85; font-size: 0.95rem; }
-.container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-.card { background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-.card h2 { font-size: 1.2rem; color: #4a5568; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e2e8f0; }
-.panel-left { display: flex; flex-direction: column; gap: 1.2rem; }
-.panel-right { display: flex; flex-direction: column; gap: 1.2rem; }
-.student-info { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
-.student-info select, .student-info button { padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid #cbd5e0; font-size: 0.9rem; }
-.student-info button { background: #667eea; color: white; border: none; cursor: pointer; }
-.student-info button:hover { background: #5a67d8; }
-.profile { background: #f7fafc; border-radius: 8px; padding: 1rem; margin-top: 0.5rem; font-size: 0.9rem; line-height: 1.6; }
-.profile strong { color: #667eea; }
-.kgraph { height: 320px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
-.exercise-box { margin-top: 0.5rem; }
-.exercise-box .q { font-size: 1rem; font-weight: 600; margin-bottom: 0.8rem; }
-.exercise-box .opts { display: flex; flex-direction: column; gap: 0.5rem; }
-.exercise-box .opt { padding: 0.6rem 1rem; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
-.exercise-box .opt:hover { background: #edf2f7; }
-.exercise-box .opt.correct { background: #c6f6d5; border-color: #48bb78; }
-.exercise-box .opt.wrong { background: #fed7d7; border-color: #fc8181; }
-.result { margin-top: 0.5rem; padding: 0.5rem; border-radius: 8px; font-size: 0.9rem; }
-.result.success { background: #f0fff4; color: #276749; }
-.result.error { background: #fff5f5; color: #c53030; }
-.code-editor { width: 100%; min-height: 180px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; font-family: "Fira Code", "Consolas", monospace; font-size: 0.9rem; resize: vertical; background: #1a202c; color: #e2e8f0; }
-.feedback-item { padding: 0.5rem 0.8rem; margin: 0.3rem 0; border-radius: 6px; font-size: 0.85rem; }
-.feedback-item.warning { background: #fefcbf; color: #975a16; border-left: 3px solid #ecc94b; }
-.feedback-item.info { background: #ebf8ff; color: #2b6cb0; border-left: 3px solid #63b3ed; }
-.feedback-item.tip { background: #f0fff4; color: #276749; border-left: 3px solid #68d391; }
-.path-item { padding: 0.4rem 0.8rem; margin: 0.2rem 0; background: #edf2f7; border-radius: 6px; font-size: 0.85rem; }
-.score-circle { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; color: white; margin: 0 auto; }
-.score-high { background: #48bb78; }
-.score-mid { background: #ed8936; }
-.score-low { background: #fc8181; }
-.path-panel { max-height: 400px; overflow-y: auto; }
-.btn { padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; border: none; transition: all 0.2s; }
-.btn-primary { background: #667eea; color: white; }
-.btn-primary:hover { background: #5a67d8; }
-.btn-green { background: #48bb78; color: white; }
-.btn-green:hover { background: #38a169; }
-.btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.8rem; }
-@media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
+:root {
+  --bg: #050508;
+  --surface: #0a0a12;
+  --card: rgba(15, 15, 30, 0.7);
+  --accent: #a855f7;
+  --accent2: #06b6d4;
+  --accent3: #ec4899;
+  --accent4: #f59e0b;
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --border: rgba(124, 58, 237, 0.2);
+  --glow: rgba(168, 85, 247, 0.4);
+  --glow2: rgba(6, 182, 212, 0.4);
+  --glow3: rgba(236, 72, 153, 0.4);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ===== Background Grid ===== */
+#bg-grid {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(124, 58, 237, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 58, 237, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  opacity: 0;
+}
+
+/* ===== Particle Canvas ===== */
+#particles {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ===== Scanline Effect ===== */
+.scanline {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 4px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+/* ===== Hero Section ===== */
+.hero {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 6rem 2rem 4rem;
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero .badge {
+  display: inline-block;
+  padding: 0.4rem 1.2rem;
+  border-radius: 50px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(6, 182, 212, 0.15));
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero .badge::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  animation: badgeShine 3s infinite;
+}
+
+@keyframes badgeShine {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+.hero h1 {
+  font-size: 4rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent2), var(--accent), var(--accent3), var(--accent2));
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+  animation: gradientShift 8s ease infinite;
+  position: relative;
+}
+
+.hero h1::after {
+  content: 'LearnPath AI';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: linear-gradient(135deg, var(--accent2), var(--accent), var(--accent3));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: blur(20px);
+  opacity: 0.3;
+  z-index: -1;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.hero .subtitle {
+  color: var(--muted);
+  font-size: 1.2rem;
+  max-width: 650px;
+  margin: 0 auto;
+  line-height: 1.8;
+}
+
+.hero .subtitle .typing-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.2em;
+  background: var(--accent2);
+  margin-left: 2px;
+  vertical-align: middle;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* ===== Scroll Indicator ===== */
+.scroll-indicator {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.scroll-indicator .mouse {
+  width: 24px; height: 40px;
+  border: 2px solid var(--muted);
+  border-radius: 12px;
+  position: relative;
+}
+
+.scroll-indicator .mouse::before {
+  content: '';
+  position: absolute;
+  top: 6px; left: 50%;
+  transform: translateX(-50%);
+  width: 4px; height: 8px;
+  background: var(--accent2);
+  border-radius: 2px;
+  animation: scrollWheel 2s infinite;
+}
+
+@keyframes scrollWheel {
+  0% { top: 6px; opacity: 1; }
+  100% { top: 20px; opacity: 0; }
+}
+
+/* ===== Container ===== */
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 0 2rem 4rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+/* ===== Card Styles ===== */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1.8rem;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  transition: border-color 0.3s ease;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), var(--accent), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 20px;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.card:hover::before { opacity: 1; }
+.card:hover::after { opacity: 0.5; }
+.card:hover { border-color: rgba(168, 85, 247, 0.4); }
+
+.card h2 {
+  font-size: 1.2rem;
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.card h2 .icon {
+  font-size: 1.4rem;
+  filter: drop-shadow(0 0 8px var(--glow));
+}
+
+/* ===== Section Labels ===== */
+.section-label {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  color: var(--accent);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+}
+
+.panel-left, .panel-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ===== Buttons ===== */
+.btn {
+  padding: 0.65rem 1.4rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  font-family: inherit;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(255,255,255,0.15), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+
+.btn:hover::before { transform: translateX(100%); }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), #7c3aed);
+  color: white;
+  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #9333ea, #6d28d9);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px var(--glow);
+}
+
+.btn-green {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.btn-green:hover {
+  background: linear-gradient(135deg, #34d399, #047857);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
+}
+
+.btn-ghost {
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-ghost:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: var(--accent);
+}
+
+.btn-group {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+/* ===== Profile ===== */
+.profile {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(6, 182, 212, 0.05));
+  border-radius: 14px;
+  padding: 1.2rem;
+  margin-top: 0.8rem;
+  font-size: 0.9rem;
+  line-height: 1.8;
+  display: none;
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.profile::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px; height: 100%;
+  background: linear-gradient(180deg, var(--accent), var(--accent2));
+}
+
+.profile strong {
+  color: var(--accent2);
+  font-weight: 700;
+}
+
+/* ===== Knowledge Graph ===== */
+.kgraph {
+  height: 380px;
+  width: 100%;
+  min-width: 300px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  position: relative;
+}
+
+.kgraph svg { width: 100%; height: 100%; }
+
+.kgraph-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 0.8rem;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.kgraph-legend span {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.kgraph-legend .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* ===== Exercise ===== */
+.exercise-box .q {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--accent2);
+  padding: 0.8rem;
+  background: rgba(6, 182, 212, 0.05);
+  border-radius: 10px;
+  border-left: 3px solid var(--accent2);
+}
+
+.exercise-box .opts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.exercise-box .opt {
+  padding: 0.8rem 1.2rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  background: rgba(255,255,255,0.02);
+  position: relative;
+  overflow: hidden;
+}
+
+.exercise-box .opt:hover {
+  background: rgba(168, 85, 247, 0.1);
+  border-color: var(--accent);
+  transform: translateX(5px);
+}
+
+.exercise-box .opt.correct {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: #10b981;
+  color: #34d399;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+}
+
+.exercise-box .opt.wrong {
+  background: rgba(244, 63, 94, 0.15);
+  border-color: var(--accent3);
+  color: #fb7185;
+  box-shadow: 0 0 15px rgba(244, 63, 94, 0.2);
+}
+
+.result {
+  margin-top: 0.8rem;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  display: none;
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+}
+
+.result.success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.result.error {
+  background: rgba(244, 63, 94, 0.1);
+  color: #fb7185;
+  border: 1px solid rgba(244, 63, 94, 0.3);
+}
+
+/* ===== Code Editor ===== */
+.code-editor {
+  width: 100%;
+  min-height: 200px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.2rem;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 0.9rem;
+  resize: vertical;
+  background: rgba(10, 10, 20, 0.8);
+  color: #e2e8f0;
+  line-height: 1.7;
+  transition: all 0.3s ease;
+}
+
+.code-editor:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 30px rgba(168, 85, 247, 0.2), inset 0 0 30px rgba(168, 85, 247, 0.05);
+}
+
+.code-editor::placeholder {
+  color: var(--muted);
+  opacity: 0.5;
+}
+
+/* ===== Feedback ===== */
+.feedback-item {
+  padding: 0.8rem 1rem;
+  margin: 0.4rem 0;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  transform-origin: left center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.feedback-item:hover {
+  transform: translateX(5px);
+}
+
+.feedback-item::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0;
+  width: 3px; height: 100%;
+  border-radius: 0 3px 3px 0;
+}
+
+.feedback-item.warning {
+  background: rgba(245, 158, 11, 0.08);
+  color: #fbbf24;
+  border-left: 3px solid #f59e0b;
+}
+
+.feedback-item.warning::before { background: #f59e0b; }
+
+.feedback-item.info {
+  background: rgba(6, 182, 212, 0.08);
+  color: #22d3ee;
+  border-left: 3px solid var(--accent2);
+}
+
+.feedback-item.info::before { background: var(--accent2); }
+
+.feedback-item.tip {
+  background: rgba(16, 185, 129, 0.08);
+  color: #34d399;
+  border-left: 3px solid #10b981;
+}
+
+.feedback-item.tip::before { background: #10b981; }
+
+/* ===== Score Circle ===== */
+.score-wrapper {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.score-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 auto;
+  position: relative;
+  background: var(--card);
+  border: 2px solid var(--border);
+}
+
+.score-circle::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  padding: 4px;
+  background: conic-gradient(var(--accent2), var(--accent), var(--accent3), var(--accent2));
+  -webkit-mask: radial-gradient(transparent 62%, #000 64%);
+  mask: radial-gradient(transparent 62%, #000 64%);
+  animation: rotate 3s linear infinite;
+}
+
+.score-circle::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: conic-gradient(var(--accent2), var(--accent), var(--accent3), var(--accent2));
+  -webkit-mask: radial-gradient(transparent 66%, #000 68%);
+  mask: radial-gradient(transparent 66%, #000 68%);
+  opacity: 0.3;
+  animation: rotate 3s linear infinite reverse;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.score-high { color: #34d399; border-color: #10b981; }
+.score-mid { color: #fbbf24; border-color: #f59e0b; }
+.score-low { color: #fb7185; border-color: var(--accent3); }
+
+.score-label {
+  margin-top: 0.8rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* ===== Path Items ===== */
+.path-item {
+  padding: 0.7rem 1rem;
+  margin: 0.4rem 0;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(6, 182, 212, 0.05));
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: 12px;
+  font-size: 0.88rem;
+  transform-origin: left center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.path-item:hover {
+  transform: translateX(8px);
+  border-color: var(--accent);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(6, 182, 212, 0.08));
+}
+
+.path-item::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0;
+  width: 3px; height: 100%;
+  background: linear-gradient(180deg, var(--accent), var(--accent2));
+  border-radius: 0 3px 3px 0;
+}
+
+.path-panel {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.path-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.path-panel::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.02);
+  border-radius: 3px;
+}
+
+.path-panel::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 3px;
+}
+
+/* ===== Neon Glow Text ===== */
+.neon-text {
+  text-shadow: 0 0 10px var(--glow), 0 0 20px var(--glow), 0 0 40px var(--glow);
+}
+
+/* ===== Progress Bar ===== */
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 0.5rem 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 2px;
+  width: 0%;
+  transition: width 1s ease;
+}
+
+/* ===== Stats Grid ===== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 1rem;
+  background: rgba(255,255,255,0.02);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+  border-color: var(--accent);
+  background: rgba(168, 85, 247, 0.05);
+  transform: translateY(-2px);
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--accent2);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 0.3rem;
+}
+
+/* ===== Loading Animation ===== */
+.loading-dots {
+  display: inline-flex;
+  gap: 0.3rem;
+  align-items: center;
+}
+
+.loading-dots span {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent2);
+  animation: loadingDot 1.4s infinite ease-in-out both;
+}
+
+.loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes loadingDot {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1000px) {
+  .container { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 2.5rem; }
+  .hero { padding: 4rem 1.5rem 2rem; min-height: 50vh; }
+  .stats-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+  .hero h1 { font-size: 2rem; }
+  .container { padding: 0 1rem 2rem; }
+  .card { padding: 1.2rem; }
+  .btn-group { flex-direction: column; }
+}
+
+/* ===== Particle Glow ===== */
+.particle-glow {
+  position: absolute;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--glow) 0%, transparent 70%);
+  pointer-events: none;
+  filter: blur(40px);
+  opacity: 0.3;
+}
 </style>
 </head>
 <body>
-<div class="header">
-    <h1>🧠 LearnPath AI</h1>
-    <p>基于知识图谱与大语言模型的自适应编程学习平台 (原型)</p>
+
+<div id="bg-grid"></div>
+<canvas id="particles"></canvas>
+<div class="scanline"></div>
+
+<div class="hero">
+  <div class="badge" id="hero-badge">🤖 AI-Powered Adaptive Learning</div>
+  <h1 id="hero-title">LearnPath AI</h1>
+  <p class="subtitle" id="hero-subtitle">
+    <span id="typing-text"></span><span class="typing-cursor"></span>
+  </p>
+
+  <div class="scroll-indicator" id="scroll-indicator">
+    <div class="mouse"></div>
+    <span>向下滚动</span>
+  </div>
 </div>
 
 <div class="container">
-    <div class="panel-left">
-        <!-- 学生档案 -->
-        <div class="card">
-            <h2>👤 学习者档案</h2>
-            <div class="student-info">
-                <button onclick="loadStudentProfile()">🎲 加载模拟学生</button>
-            </div>
-            <div class="profile" id="profile" style="display:none"></div>
-        </div>
-
-        <!-- 知识图谱 -->
-        <div class="card">
-            <h2>🗺️ Python 知识图谱</h2>
-            <div class="kgraph" id="kgraph"></div>
-            <div style="font-size:0.8rem;color:#718096;margin-top:0.5rem;">
-                图例: 箭头表示 "需先掌握 → 才能学习" 的依赖关系
-            </div>
-        </div>
-
-        <!-- 自适应练习 -->
-        <div class="card">
-            <h2>📝 自适应练习</h2>
-            <div class="btn-group">
-                <button class="btn btn-primary" onclick="getExercise(1)">★ 初级</button>
-                <button class="btn btn-primary" onclick="getExercise(2)">★★ 中级</button>
-                <button class="btn btn-primary" onclick="getExercise(3)">★★★ 进阶</button>
-                <button class="btn btn-primary" onclick="getExercise(4)">★★★★ 高级</button>
-            </div>
-            <div class="exercise-box" id="exercise"></div>
-            <div class="result" id="exercise-result" style="display:none"></div>
-        </div>
+  <div class="panel-left">
+    <!-- Student Profile -->
+    <div class="card" data-anim="left">
+      <div class="section-label">Profile</div>
+      <h2><span class="icon">👤</span> 学习者档案</h2>
+      <button class="btn btn-primary" onclick="loadStudentProfile()">
+        <span style="margin-right:0.3rem;">🎲</span> 加载模拟学生
+      </button>
+      <div class="profile" id="profile"></div>
     </div>
 
-    <div class="panel-right">
-        <!-- 学习路径推荐 -->
-        <div class="card path-panel">
-            <h2>🎯 个性化学习路径</h2>
-            <div class="btn-group" style="margin-bottom:1rem;">
-                <button class="btn btn-green" onclick="getLearningPath()">🔍 生成推荐路径</button>
-            </div>
-            <div id="path-result">
-                <p style="color:#a0aec0;">点击按钮，系统将根据当前掌握情况生成推荐学习路径</p>
-            </div>
-        </div>
+    <!-- Knowledge Graph -->
+    <div class="card" data-anim="left">
+      <div class="section-label">Knowledge Graph</div>
+      <h2><span class="icon">🗺️</span> Python 知识图谱</h2>
+      <div class="kgraph" id="kgraph"></div>
+      <div class="kgraph-legend" id="kgraph-legend"></div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:0.5rem;text-align:center;">
+        箭头表示「需先掌握 → 才能学习」的依赖关系 · 可拖拽交互
+      </div>
+    </div>
 
-        <!-- AI 代码审查 -->
-        <div class="card">
-            <h2>🤖 AI 代码审查</h2>
-            <textarea class="code-editor" id="code-input" placeholder="# 在这里编写你的 Python 代码...
+    <!-- Exercise -->
+    <div class="card" data-anim="left">
+      <div class="section-label">Exercise</div>
+      <h2><span class="icon">📝</span> 自适应练习</h2>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="getExercise(1)">★ 初级</button>
+        <button class="btn btn-primary" onclick="getExercise(2)">★★ 中级</button>
+        <button class="btn btn-primary" onclick="getExercise(3)">★★★ 进阶</button>
+        <button class="btn btn-primary" onclick="getExercise(4)">★★★★ 高级</button>
+      </div>
+      <div class="exercise-box" id="exercise"></div>
+      <div class="result" id="exercise-result"></div>
+    </div>
+  </div>
+
+  <div class="panel-right">
+    <!-- Learning Path -->
+    <div class="card path-panel" data-anim="right">
+      <div class="section-label">Path</div>
+      <h2><span class="icon">🎯</span> 个性化学习路径</h2>
+      <button class="btn btn-green" onclick="getLearningPath()">
+        <span style="margin-right:0.3rem;">🔍</span> 生成推荐路径
+      </button>
+      <div id="path-result" style="margin-top:1rem;">
+        <p style="color:var(--muted);">点击按钮，系统将根据掌握情况生成推荐学习路径</p>
+      </div>
+    </div>
+
+    <!-- AI Code Review -->
+    <div class="card" data-anim="right">
+      <div class="section-label">AI Review</div>
+      <h2><span class="icon">🤖</span> AI 代码审查</h2>
+      <textarea class="code-editor" id="code-input" placeholder="# 在这里编写你的 Python 代码...
 def hello(name):
     return f'Hello, {name}!'
 
-print(hello('World'))"></textarea>
-            <div class="btn-group">
-                <button class="btn btn-green" onclick="reviewCode()">🔍 审查代码</button>
-                <button class="btn" onclick="document.getElementById('code-input').value=''" style="background:#e2e8f0;">清空</button>
-            </div>
-            <div id="review-result" style="margin-top:1rem;"></div>
-        </div>
+print(hello('World'))">def hello(name):
+    return f'Hello, {name}!'
+
+print(hello('World'))</textarea>
+      <div class="btn-group">
+        <button class="btn btn-green" onclick="reviewCode()">
+          <span style="margin-right:0.3rem;">🔍</span> 审查代码
+        </button>
+        <button class="btn btn-ghost" onclick="document.getElementById('code-input').value=''">
+          <span style="margin-right:0.3rem;">🗑️</span> 清空
+        </button>
+      </div>
+      <div id="review-result" style="margin-top:1rem;"></div>
     </div>
+  </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://d3js.org/d3.v7.min.js"></script>
+
 <script>
-// ===== 知识图谱可视化 =====
-async function drawKnowledgeGraph() {
-    const resp = await fetch('/api/knowledge-graph');
-    const data = await resp.json();
-    const container = d3.select('#kgraph');
-    const width = container.node().clientWidth, height = 320;
+// ===== GSAP REGISTER =====
+gsap.registerPlugin(ScrollTrigger);
 
-    const svg = container.html('').append('svg')
-        .attr('width', width).attr('height', height);
+// ===== PARTICLE SYSTEM =====
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let particles = [];
+let mouse = { x: null, y: null };
 
-    const color = d3.scaleOrdinal()
-        .domain([...new Set(data.nodes.map(n => n.category))])
-        .range(['#667eea', '#48bb78', '#ed8936', '#e53e3e', '#805ad5', '#dd6b20']);
-
-    const simulation = d3.forceSimulation(data.nodes)
-        .force('link', d3.forceLink(data.edges).id(d => d.id).distance(80))
-        .force('charge', d3.forceManyBody().strength(-300))
-        .force('center', d3.forceCenter(width / 2, height / 2))
-        .force('collision', d3.forceCollide(30));
-
-    // 箭头定义
-    svg.append('defs').selectAll('marker')
-        .data(['arrow']).enter().append('marker')
-        .attr('id', 'arrow').attr('viewBox', '0 -5 10 10')
-        .attr('refX', 22).attr('refY', 0)
-        .attr('markerWidth', 8).attr('markerHeight', 8)
-        .attr('orient', 'auto')
-        .append('path').attr('d', 'M0,-5L10,0L0,5').attr('fill', '#999');
-
-    const link = svg.append('g')
-        .selectAll('line').data(data.edges).enter().append('line')
-        .attr('stroke', '#cbd5e0').attr('stroke-width', 1.5).attr('marker-end', 'url(#arrow)');
-
-    const node = svg.append('g')
-        .selectAll('g').data(data.nodes).enter().append('g');
-
-    node.append('circle')
-        .attr('r', d => 12 + d.difficulty * 2)
-        .attr('fill', d => color(d.category))
-        .attr('stroke', 'white').attr('stroke-width', 1.5)
-        .call(d3.drag().on('start', (e, d) => { if (!e.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
-              .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
-              .on('end', (e, d) => { if (!e.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; }));
-
-    node.append('text')
-        .text(d => d.id.length > 4 ? d.id.slice(0,6)+'..' : d.id)
-        .attr('text-anchor', 'middle').attr('dy', d => -18 - d.difficulty * 2)
-        .attr('font-size', '9px').attr('fill', '#4a5568');
-
-    simulation.on('tick', () => {
-        link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
-            .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
-        node.attr('transform', d => `translate(${d.x},${d.y})`);
-    });
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 }
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+class Particle {
+  constructor() {
+    this.reset();
+    this.y = Math.random() * canvas.height;
+  }
+
+  reset() {
+    this.x = Math.random() * canvas.width;
+    this.y = -10;
+    this.size = Math.random() * 2.5 + 0.5;
+    this.speed = Math.random() * 0.8 + 0.2;
+    this.opacity = Math.random() * 0.6 + 0.2;
+    this.hue = Math.random() < 0.33 ? 270 : Math.random() < 0.5 ? 190 : 330;
+    this.vx = (Math.random() - 0.5) * 0.5;
+    this.vy = this.speed;
+  }
+
+  update() {
+    // Mouse repulsion
+    if (mouse.x !== null && mouse.y !== null) {
+      const dx = this.x - mouse.x;
+      const dy = this.y - mouse.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 150) {
+        const force = (150 - dist) / 150;
+        this.vx += (dx / dist) * force * 0.5;
+        this.vy += (dy / dist) * force * 0.5;
+      }
+    }
+
+    this.x += this.vx;
+    this.y += this.vy;
+    this.vx *= 0.98;
+    this.vy *= 0.98;
+    this.vy += 0.01;
+
+    this.opacity -= 0.0002;
+
+    if (this.y > canvas.height + 10 || this.opacity <= 0 || this.x < -10 || this.x > canvas.width + 10) {
+      this.reset();
+    }
+  }
+
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = `hsla(${this.hue}, 80%, 60%, ${this.opacity})`;
+    ctx.fill();
+
+    // Glow effect
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
+    ctx.fillStyle = `hsla(${this.hue}, 80%, 60%, ${this.opacity * 0.3})`;
+    ctx.fill();
+  }
+}
+
+for (let i = 0; i < 100; i++) {
+  particles.push(new Particle());
+}
+
+// Mouse tracking
+window.addEventListener('mousemove', (e) => {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+});
+
+window.addEventListener('mouseleave', () => {
+  mouse.x = null;
+  mouse.y = null;
+});
+
+function drawConnections() {
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < 100) {
+        const opacity = (1 - dist / 100) * 0.15;
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.strokeStyle = `rgba(168, 85, 247, ${opacity})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    }
+  }
+}
+
+function animateParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawConnections();
+  particles.forEach(p => {
+    p.update();
+    p.draw();
+  });
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+// ===== TYPING EFFECT =====
+const typingText = "基于知识图谱与大语言模型的自适应编程学习平台 · 千人千面的智能学习体验";
+const typingElement = document.getElementById('typing-text');
+let typingIndex = 0;
+
+function typeText() {
+  if (typingIndex < typingText.length) {
+    typingElement.textContent += typingText.charAt(typingIndex);
+    typingIndex++;
+    setTimeout(typeText, 50);
+  }
+}
+
+// ===== MASTER ENTRANCE TIMELINE =====
+const masterTL = gsap.timeline({
+  defaults: { ease: "power3.out" },
+  onComplete: () => {
+    typeText();
+  }
+});
+
+masterTL
+  .to('#bg-grid', { opacity: 1, duration: 1.5 })
+  .from('.hero .badge', { y: -40, opacity: 0, duration: 0.8, ease: "back.out(1.7)" }, 0.3)
+  .from('#hero-title', {
+    scale: 0.5,
+    opacity: 0,
+    duration: 1,
+    ease: "back.out(1.7)",
+    filter: "blur(20px)"
+  }, 0.5)
+  .from('.hero .subtitle', { y: 30, opacity: 0, duration: 0.8 }, 1)
+  .from('#scroll-indicator', { y: 20, opacity: 0, duration: 0.6 }, 1.5)
+  .from('[data-anim="left"]', {
+    x: -100,
+    opacity: 0,
+    stagger: 0.15,
+    duration: 0.8,
+    ease: "back.out(1.4)"
+  }, 1.2)
+  .from('[data-anim="right"]', {
+    x: 100,
+    opacity: 0,
+    stagger: 0.15,
+    duration: 0.8,
+    ease: "back.out(1.4)"
+  }, "<");
+
+// ===== CARD FLOATING ANIMATION =====
+document.querySelectorAll('.card').forEach((card, i) => {
+  gsap.to(card, {
+    y: -6 + Math.random() * 12,
+    duration: 2.5 + Math.random() * 2,
+    repeat: -1,
+    yoyo: true,
+    ease: "sine.inOut",
+    delay: i * 0.3
+  });
+});
+
+// ===== 3D TILT ON CARD HOVER =====
+document.querySelectorAll('.card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const r = card.getBoundingClientRect();
+    const x = e.clientX - r.left;
+    const y = e.clientY - r.top;
+    const cx = r.width / 2;
+    const cy = r.height / 2;
+    const rx = (y - cy) / cy * -10;
+    const ry = (x - cx) / cx * 10;
+
+    gsap.to(card, {
+      rotateX: rx,
+      rotateY: ry,
+      duration: 0.4,
+      ease: "power2.out",
+      transformPerspective: 1000
+    });
+  });
+
+  card.addEventListener('mouseleave', () => {
+    gsap.to(card, {
+      rotateX: 0,
+      rotateY: 0,
+      duration: 0.8,
+      ease: "elastic.out(1, 0.3)"
+    });
+  });
+});
+
+// ===== SCROLLTRIGGER: REVEAL ON SCROLL =====
+document.querySelectorAll('.card').forEach(card => {
+  gsap.from(card, {
+    scrollTrigger: {
+      trigger: card,
+      start: "top bottom-=80px",
+      toggleActions: "play none none reverse"
+    },
+    y: 80,
+    opacity: 0,
+    duration: 1,
+    ease: "power3.out"
+  });
+});
+
+// ===== SCROLL PROGRESS =====
+ScrollTrigger.create({
+  trigger: "body",
+  start: "top top",
+  end: "bottom bottom",
+  onUpdate: (self) => {
+    const progress = self.progress * 100;
+    // Optional: could add a progress indicator
+  }
+});
+
+// ===== BUTTON RIPPLE =====
+document.querySelectorAll('.btn').forEach(btn => {
+  btn.addEventListener('click', function(e) {
+    const ripple = document.createElement('span');
+    ripple.style.cssText = `
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+      width: 20px;
+      height: 20px;
+      left: ${e.offsetX - 10}px;
+      top: ${e.offsetY - 10}px;
+      pointer-events: none;
+    `;
+    this.appendChild(ripple);
+    gsap.to(ripple, {
+      scale: 10,
+      opacity: 0,
+      duration: 0.8,
+      ease: "power2.out",
+      onComplete: () => ripple.remove()
+    });
+  });
+});
+
+// ===== KNOWLEDGE GRAPH =====
+async function drawKnowledgeGraph() {
+  console.log('D3: START');
+
+  const resp = await fetch('/api/knowledge-graph');
+  const data = await resp.json();
+  const container = d3.select('#kgraph');
+  const w = container.node().clientWidth;
+  const h = 380;
+
+  const svg = container.html('').append('svg')
+    .attr('width', w)
+    .attr('height', h);
+
+  const defs = svg.append('defs');
+  const cats = [...new Set(data.nodes.map(n => n.category))];
+  const cs = d3.scaleOrdinal()
+    .domain(cats)
+    .range(['#a855f7', '#06b6d4', '#ec4899', '#10b981', '#f59e0b', '#8b5cf6']);
+
+  // Create gradients
+  cats.forEach((cat, i) => {
+    const g = defs.append('radialGradient').attr('id', 'g' + i);
+    g.append('stop').attr('offset', '0%').attr('stop-color', cs(cat)).attr('stop-opacity', 1);
+    g.append('stop').attr('offset', '100%').attr('stop-color', cs(cat)).attr('stop-opacity', 0.3);
+  });
+
+  // Arrow marker
+  defs.append('marker')
+    .attr('id', 'ar')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 22)
+    .attr('refY', 0)
+    .attr('markerWidth', 8)
+    .attr('markerHeight', 8)
+    .attr('orient', 'auto')
+    .append('path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('fill', '#4a4a6a');
+
+  // Create legend
+  const legend = document.getElementById('kgraph-legend');
+  legend.innerHTML = cats.map(cat =>
+    `<span><span class="dot" style="background:${cs(cat)};box-shadow:0 0 8px ${cs(cat)}"></span>${cat}</span>`
+  ).join('');
+
+  console.log('D3: got data, nodes=' + data.nodes.length + ', edges=' + data.edges.length);
+
+  const sim = d3.forceSimulation(data.nodes)
+    .force('link', d3.forceLink(data.edges).id(d => d.id).distance(80))
+    .force('charge', d3.forceManyBody().strength(-400))
+    .force('center', d3.forceCenter(w / 2, h / 2))
+    .force('collision', d3.forceCollide(35));
+
+  const link = svg.append('g')
+    .selectAll('line')
+    .data(data.edges)
+    .enter()
+    .append('line')
+    .attr('stroke', '#2a2a4a')
+    .attr('stroke-width', 1.5)
+    .attr('marker-end', 'url(#ar)');
+
+  const node = svg.append('g')
+    .selectAll('g')
+    .data(data.nodes)
+    .enter()
+    .append('g');
+
+  const circles = node.append('circle')
+    .attr('r', d => 12 + d.difficulty * 2.5)
+    .attr('fill', d => `url(#g${cats.indexOf(d.category)})`)
+    .attr('stroke', 'rgba(255,255,255,0.3)')
+    .attr('stroke-width', 1.5)
+    .style('cursor', 'grab')
+    .call(d3.drag()
+      .on('start', (e, d) => {
+        if (!e.active) sim.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+      })
+      .on('drag', (e, d) => {
+        d.fx = e.x;
+        d.fy = e.y;
+      })
+      .on('end', (e, d) => {
+        if (!e.active) sim.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+      }));
+
+  node.append('text')
+    .text(d => d.id.length > 5 ? d.id.slice(0, 5) + '…' : d.id)
+    .attr('text-anchor', 'middle')
+    .attr('dy', d => -20 - d.difficulty * 2.5)
+    .attr('font-size', '9px')
+    .attr('fill', '#94a3b8');
+
+  console.log('D3: creating elements, circles=' + circles.nodes().length);
+
+  sim.on('tick', () => {
+    link
+      .attr('x1', d => d.source.x)
+      .attr('y1', d => d.source.y)
+      .attr('x2', d => d.target.x)
+      .attr('y2', d => d.target.y);
+    node.attr('transform', d => `translate(${d.x},${d.y})`);
+  });
+
+  // Animate nodes
+  gsap.from(circles.nodes(), {
+    scale: 0,
+    opacity: 0,
+    duration: 0.6,
+    stagger: { each: 0.05, from: "center" },
+    ease: "back.out(2)",
+    delay: 0.5
+  });
+
+  gsap.from(link.nodes(), {
+    opacity: 0,
+    duration: 0.8,
+    stagger: 0.03,
+    delay: 1
+  });
+
+  circles.on('mouseenter', function() {
+    gsap.to(this, {
+      scale: 1.3,
+      duration: 0.3,
+      ease: "back.out(2)",
+      stroke: 'rgba(255,255,255,0.8)',
+      strokeWidth: 2
+    });
+  });
+
+  circles.on('mouseleave', function() {
+    gsap.to(this, {
+      scale: 1,
+      duration: 0.3,
+      ease: "power2.out",
+      stroke: 'rgba(255,255,255,0.3)',
+      strokeWidth: 1.5
+    });
+  });
+}
+
 drawKnowledgeGraph();
 
-// ===== 学生档案 =====
+// ===== STUDENT PROFILE =====
 async function loadStudentProfile() {
-    const resp = await fetch('/api/simulate-student');
-    const s = await resp.json();
-    document.getElementById('profile').style.display = 'block';
-    document.getElementById('profile').innerHTML = `
-        <strong>${s.name}</strong><br>
-        📚 已掌握: ${s.mastered.join(', ') || '无'}<br>
-        💪 优势: ${s.strengths}<br>
-        ⚠️ 薄弱: ${s.weakness}<br>
-        🎯 推荐下一步: <strong>${s.recommended_next}</strong><br>
-        📖 学习风格: ${s.learning_style}
-    `;
+  const btn = document.querySelector('.btn-primary');
+  const originalText = btn.innerHTML;
+
+  btn.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div> 加载中...';
+  btn.disabled = true;
+
+  const resp = await fetch('/api/simulate-student');
+  const s = await resp.json();
+
+  btn.innerHTML = originalText;
+  btn.disabled = false;
+
+  const p = document.getElementById('profile');
+  p.style.display = 'block';
+  p.innerHTML = `
+    <div style="font-size:1.1rem;font-weight:700;margin-bottom:0.8rem;color:var(--accent);">
+      ${s.name}
+    </div>
+    <div style="display:grid;gap:0.5rem;">
+      <div>📚 <strong>已掌握:</strong> ${s.mastered.join(', ') || '无'}</div>
+      <div>💪 <strong>优势:</strong> ${s.strengths}</div>
+      <div>⚠️ <strong>薄弱:</strong> ${s.weakness}</div>
+      <div>🎯 <strong>推荐下一步:</strong> <span style="color:var(--accent2);font-weight:700;">${s.recommended_next}</span></div>
+      <div>📖 <strong>学习风格:</strong> ${s.learning_style}</div>
+    </div>
+  `;
+
+  gsap.from(p, {
+    y: -30,
+    opacity: 0,
+    duration: 0.6,
+    ease: "back.out(1.4)"
+  });
+
+  gsap.from(p.querySelectorAll('div'), {
+    x: -20,
+    opacity: 0,
+    stagger: 0.08,
+    duration: 0.4,
+    delay: 0.2,
+    ease: "power3.out"
+  });
 }
 
-// ===== 练习题 =====
+// ===== EXERCISES =====
 async function getExercise(level) {
-    const resp = await fetch(`/api/exercise/${level}`);
-    const ex = await resp.json();
-    const div = document.getElementById('exercise');
-    div.innerHTML = `
-        <div class="q">[${ex.concept}] ${ex.q}</div>
-        <div class="opts">
-            ${ex.opts.map((o, i) => `<div class="opt" onclick="checkAnswer(${i}, ${ex.ans}, this)">${String.fromCharCode(65+i)}. ${o}</div>`).join('')}
+  const resp = await fetch('/api/exercise/' + level);
+  const ex = await resp.json();
+  const div = document.getElementById('exercise');
+
+  div.innerHTML = `
+    <div class="q">[${ex.concept}] ${ex.q}</div>
+    <div class="opts">
+      ${ex.opts.map((o, i) => `
+        <div class="opt" onclick="checkAnswer(${i}, ${ex.ans}, this)">
+          <span style="color:var(--accent);font-weight:700;margin-right:0.5rem;">${String.fromCharCode(65 + i)}.</span>
+          ${o}
         </div>
-    `;
-    document.getElementById('exercise-result').style.display = 'none';
+      `).join('')}
+    </div>
+  `;
+
+  document.getElementById('exercise-result').style.display = 'none';
+
+  gsap.from(div.querySelectorAll('.opt'), {
+    x: -40,
+    opacity: 0,
+    duration: 0.5,
+    stagger: 0.1,
+    ease: "back.out(1.4)"
+  });
 }
 
 function checkAnswer(chosen, correct, el) {
-    const opts = el.parentElement.children;
-    for (let o of opts) o.style.pointerEvents = 'none';
-    opts[correct].classList.add('correct');
-    const result = document.getElementById('exercise-result');
-    result.style.display = 'block';
-    if (chosen === correct) {
-        result.className = 'result success';
-        result.textContent = '✓ 正确！做得很好！';
-    } else {
-        opts[chosen].classList.add('wrong');
-        result.className = 'result error';
-        result.textContent = '✗ 错误，请查看正确答案（绿色标注）';
-    }
+  const opts = el.parentElement.children;
+  const result = document.getElementById('exercise-result');
+
+  for (let o of opts) o.style.pointerEvents = 'none';
+  opts[correct].classList.add('correct');
+  result.style.display = 'block';
+
+  if (chosen === correct) {
+    result.className = 'result success';
+    result.textContent = '✓ 正确！';
+
+    // Confetti effect
+    createConfetti(opts[correct]);
+  } else {
+    opts[chosen].classList.add('wrong');
+    result.className = 'result error';
+    result.textContent = '✗ 错误，查看正确选项（绿色）';
+  }
+
+  gsap.from(result, {
+    scale: 0.8,
+    opacity: 0,
+    duration: 0.6,
+    ease: "back.out(2)"
+  });
 }
 
-// ===== AI 代码审查 =====
+function createConfetti(element) {
+  const rect = element.getBoundingClientRect();
+  const colors = ['#a855f7', '#06b6d4', '#ec4899', '#10b981', '#f59e0b'];
+
+  for (let i = 0; i < 20; i++) {
+    const confetti = document.createElement('div');
+    confetti.style.cssText = `
+      position: fixed;
+      width: 8px;
+      height: 8px;
+      background: ${colors[Math.floor(Math.random() * colors.length)]};
+      border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+      left: ${rect.left + rect.width / 2}px;
+      top: ${rect.top + rect.height / 2}px;
+      pointer-events: none;
+      z-index: 10000;
+    `;
+    document.body.appendChild(confetti);
+
+    gsap.to(confetti, {
+      x: (Math.random() - 0.5) * 200,
+      y: -100 - Math.random() * 150,
+      rotation: Math.random() * 720,
+      opacity: 0,
+      duration: 1 + Math.random() * 0.5,
+      ease: "power2.out",
+      onComplete: () => confetti.remove()
+    });
+  }
+}
+
+// ===== AI CODE REVIEW =====
 async function reviewCode() {
-    const code = document.getElementById('code-input').value;
-    const resp = await fetch('/api/review-code', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({code})
-    });
-    const data = await resp.json();
-    const div = document.getElementById('review-result');
-    let scoreClass = data.score >= 80 ? 'score-high' : data.score >= 50 ? 'score-mid' : 'score-low';
-    div.innerHTML = `
-        <div style="text-align:center;margin-bottom:1rem;">
-            <div class="score-circle ${scoreClass}">${data.score}</div>
-            <div style="margin-top:0.3rem;font-size:0.85rem;color:#718096;">代码质量评分</div>
+  const code = document.getElementById('code-input').value;
+  const btn = document.querySelectorAll('.btn-green')[1];
+  const originalText = btn.innerHTML;
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div> 分析中...';
+
+  gsap.to(btn, { scale: 1.02, duration: 0.3, repeat: -1, yoyo: true, ease: "power1.inOut" });
+
+  const resp = await fetch('/api/review-code', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code })
+  });
+  const data = await resp.json();
+
+  gsap.killTweensOf(btn);
+  btn.disabled = false;
+  btn.innerHTML = originalText;
+  gsap.to(btn, { scale: 1, duration: 0.2 });
+
+  const div = document.getElementById('review-result');
+  const sc = data.score >= 80 ? 'score-high' : data.score >= 50 ? 'score-mid' : 'score-low';
+  const src = data.source === 'deepseek' ? '🤖 DeepSeek AI' : '📋 规则引擎';
+
+  div.innerHTML = `
+    <div class="score-wrapper">
+      <div class="score-circle ${sc}" id="score-num">0</div>
+      <div class="score-label">${src} · 代码质量评分</div>
+    </div>
+    <div id="feedback-list">
+      ${data.feedbacks.map(f => `
+        <div class="feedback-item ${f.level}" style="opacity:0">
+          <span style="margin-right:0.5rem;">
+            ${f.level === 'warning' ? '⚠️' : f.level === 'tip' ? '💡' : 'ℹ️'}
+          </span>
+          ${f.msg}
         </div>
-        ${data.feedbacks.map(f => `<div class="feedback-item ${f.level}">${f.level === 'warning' ? '⚠️' : f.level === 'tip' ? '💡' : 'ℹ️'} ${f.msg}</div>`).join('')}
-    `;
-}
+      `).join('')}
+    </div>
+  `;
 
-// ===== 学习路径推荐 =====
-async function getLearningPath() {
-    const profile = document.getElementById('profile').textContent || document.getElementById('profile').innerText;
-    let mastered = [];
-    const match = profile.match(/已掌握:\s*(.*?)(?:\n|$)/);
-    if (match && match[1] && match[1] !== '无') {
-        mastered = match[1].split(', ').filter(Boolean);
+  // Animate score
+  gsap.to({ val: 0 }, {
+    val: data.score,
+    duration: 1.5,
+    ease: "power2.out",
+    onUpdate: function() {
+      document.getElementById('score-num').textContent = Math.round(this.targets()[0].val);
     }
+  });
 
-    const resp = await fetch('/api/learning-path', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({mastered})
-    });
-    const data = await resp.json();
-    const div = document.getElementById('path-result');
-    div.innerHTML = `
-        <p style="font-size:0.9rem;margin-bottom:0.5rem;">已掌握 <strong>${data.mastered_count}</strong>/${data.total_count} 个概念</p>
-        <strong>推荐学习顺序:</strong>
-        ${data.recommendations.length > 0
-            ? data.recommendations.map(p => `<div class="path-item">📌 ${p}</div>`).join('')
-            : '<p style="color:#a0aec0;">暂无可用推荐</p>'}
-    `;
+  gsap.from('#score-num', {
+    scale: 0,
+    rotation: -180,
+    duration: 1,
+    ease: "back.out(1.7)"
+  });
+
+  gsap.to(div.querySelectorAll('.feedback-item'), {
+    opacity: 1,
+    x: 0,
+    duration: 0.6,
+    stagger: 0.12,
+    ease: "power3.out",
+    delay: 0.3
+  });
+
+  gsap.from(div.querySelectorAll('.feedback-item'), {
+    x: -30,
+    duration: 0.6,
+    stagger: 0.12,
+    ease: "power3.out",
+    delay: 0.3
+  });
 }
+
+// ===== LEARNING PATH =====
+async function getLearningPath() {
+  const btn = document.querySelectorAll('.btn-green')[0];
+  const originalText = btn.innerHTML;
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div> 生成中...';
+
+  const pt = document.getElementById('profile').textContent || document.getElementById('profile').innerText;
+  let mastered = [];
+  let m = pt.match(/已掌握:\s*(.*?)(?:\n|$)/);
+  if (m && m[1] && m[1] !== '无') mastered = m[1].split(', ').filter(Boolean);
+
+  const resp = await fetch('/api/learning-path', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ mastered })
+  });
+  const data = await resp.json();
+  const div = document.getElementById('path-result');
+
+  btn.disabled = false;
+  btn.innerHTML = originalText;
+
+  const progressPercent = (data.mastered_count / data.total_count) * 100;
+
+  div.innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-value">${data.mastered_count}</div>
+        <div class="stat-label">已掌握</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">${data.total_count}</div>
+        <div class="stat-label">总概念</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">${Math.round(progressPercent)}%</div>
+        <div class="stat-label">完成度</div>
+      </div>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="path-progress"></div>
+    </div>
+    <strong style="color:var(--accent2);display:block;margin:1rem 0 0.5rem;">📋 推荐学习顺序:</strong>
+    ${data.recommendations.length > 0
+      ? data.recommendations.map(p => `<div class="path-item" style="opacity:0">📌 ${p}</div>`).join('')
+      : '<p style="color:var(--muted);">暂无可用推荐</p>'
+    }
+  `;
+
+  // Animate progress bar
+  setTimeout(() => {
+    const progressFill = document.getElementById('path-progress');
+    if (progressFill) {
+      progressFill.style.width = progressPercent + '%';
+    }
+  }, 100);
+
+  // Animate stats
+  gsap.from('.stat-item', {
+    y: 30,
+    opacity: 0,
+    stagger: 0.1,
+    duration: 0.6,
+    ease: "back.out(1.4)"
+  });
+
+  // Animate path items
+  gsap.to(div.querySelectorAll('.path-item'), {
+    opacity: 1,
+    duration: 0.6,
+    stagger: 0.12,
+    ease: "back.out(1.4)",
+    delay: 0.3
+  });
+
+  gsap.from(div.querySelectorAll('.path-item'), {
+    x: 50,
+    duration: 0.6,
+    stagger: 0.12,
+    ease: "power3.out",
+    delay: 0.3
+  });
+}
+
+// ===== SCROLL INDICATOR FADE =====
+ScrollTrigger.create({
+  trigger: ".container",
+  start: "top 80%",
+  onEnter: () => {
+    gsap.to('#scroll-indicator', { opacity: 0, y: 20, duration: 0.5 });
+  },
+  onLeaveBack: () => {
+    gsap.to('#scroll-indicator', { opacity: 0.7, y: 0, duration: 0.5 });
+  }
+});
+
+// ===== REDUCED MOTION =====
+const mm = gsap.matchMedia();
+mm.add("(prefers-reduced-motion: reduce)", () => {
+  gsap.globalTimeline.timeScale(0);
+  return () => {
+    gsap.globalTimeline.timeScale(1);
+  };
+});
 </script>
 </body>
 </html>
